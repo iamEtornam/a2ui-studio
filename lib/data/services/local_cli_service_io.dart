@@ -81,17 +81,21 @@ class LocalCliService {
     return results;
   }
 
+  static const _allowedCliIds = {'agy', 'claude', 'codex', 'gemini', 'ollama'};
+  static final _safeModelPattern = RegExp(r'^[a-zA-Z0-9][a-zA-Z0-9._:/-]{0,127}$');
+
   /// Dynamically fetches available models for CLIs that expose a model listing command.
   Future<List<AiModelInfo>> fetchModelsForCli(InstalledCliTool cli) async {
-    final exe = cli.executablePath;
-    if (!isSupported || exe == null || exe.isEmpty) return const [];
+    if (!isSupported || !_allowedCliIds.contains(cli.id)) return const [];
+    final exe = await _resolveBinary(cli.binaryName, _candidateBinDirs());
+    if (exe == null || exe.isEmpty) return const [];
 
     if (cli.id == 'agy') {
       final res = await Process.run(
         exe,
         ['models'],
         environment: _augmentedEnv(),
-      );
+      ).timeout(const Duration(seconds: 15));
       if (res.exitCode != 0) return const [];
       final lines = res.stdout.toString().split('\n');
       final models = <AiModelInfo>[];
@@ -116,7 +120,7 @@ class LocalCliService {
         exe,
         ['list'],
         environment: _augmentedEnv(),
-      );
+      ).timeout(const Duration(seconds: 15));
       if (res.exitCode != 0) return const [];
       final lines = res.stdout.toString().split('\n');
       final models = <AiModelInfo>[];
@@ -134,18 +138,29 @@ class LocalCliService {
     return const [];
   }
 
-  /// Executes a non-interactive prompt through the connected CLI using its own auth.
+  /// Executes a non-interactive prompt through an allowlisted CLI using its own auth.
   Future<String> runPrompt({
     required InstalledCliTool cli,
     required String prompt,
     String? model,
   }) async {
-    final exe = cli.executablePath;
-    if (!isSupported || exe == null || exe.isEmpty) {
+    if (!isSupported || !_allowedCliIds.contains(cli.id)) {
+      throw Exception('Unsupported or disallowed CLI tool: "${cli.id}".');
+    }
+
+    // Always re-resolve the binary from trusted directories; never trust a persisted path.
+    final exe = await _resolveBinary(cli.binaryName, _candidateBinDirs());
+    if (exe == null || exe.isEmpty) {
       throw Exception('${cli.name} executable not found on this machine.');
     }
 
     final cleanModel = model?.trim() ?? '';
+    if (cleanModel.isNotEmpty && !_safeModelPattern.hasMatch(cleanModel)) {
+      throw Exception('Invalid model identifier: "$cleanModel".');
+    }
+
+    // Prevent positional prompts starting with '-' from being parsed as CLI flags.
+    final safePrompt = prompt.startsWith('-') ? ' $prompt' : prompt;
     final List<String> args;
 
     switch (cli.id) {
@@ -155,12 +170,12 @@ class LocalCliService {
           '--output-format',
           'text',
           if (cleanModel.isNotEmpty) ...['--model', cleanModel],
-          prompt,
+          safePrompt,
         ];
       case 'claude':
         args = [
           '-p',
-          prompt,
+          safePrompt,
           '--output-format',
           'text',
           if (cleanModel.isNotEmpty) ...['--model', cleanModel],
@@ -170,12 +185,12 @@ class LocalCliService {
           'exec',
           '--skip-git-repo-check',
           if (cleanModel.isNotEmpty) ...['-m', cleanModel],
-          prompt,
+          safePrompt,
         ];
       case 'gemini':
         args = [
           '-p',
-          prompt,
+          safePrompt,
           if (cleanModel.isNotEmpty) ...['-m', cleanModel],
         ];
       case 'ollama':
@@ -184,16 +199,16 @@ class LocalCliService {
             'Select an installed Ollama model in Settings first.',
           );
         }
-        args = ['run', cleanModel, prompt];
+        args = ['run', cleanModel, safePrompt];
       default:
-        args = ['-p', prompt];
+        throw Exception('Unsupported CLI tool: "${cli.id}".');
     }
 
     final result = await Process.run(
       exe,
       args,
       environment: _augmentedEnv(),
-    );
+    ).timeout(const Duration(seconds: 120));
 
     final stdoutStr = result.stdout.toString().trim();
     final stderrStr = result.stderr.toString().trim();

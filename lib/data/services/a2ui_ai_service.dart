@@ -74,7 +74,6 @@ class A2uiAiService {
 
     do {
       final queryParams = <String, String>{
-        'key': trimmedKey,
         'pageSize': '100',
         if (pageToken != null && pageToken.isNotEmpty) 'pageToken': pageToken,
       };
@@ -82,7 +81,10 @@ class A2uiAiService {
         queryParameters: queryParams,
       );
 
-      final response = await _httpClient.get(uri);
+      final response = await _httpClient.get(
+        uri,
+        headers: {'x-goog-api-key': trimmedKey},
+      );
       if (response.statusCode != 200) {
         throw A2uiApiException(_extractApiError(response));
       }
@@ -182,11 +184,14 @@ class A2uiAiService {
 
     final uri = Uri.parse(
       '$_baseUrl/models/${settings.selectedModel}:generateContent',
-    ).replace(queryParameters: {'key': settings.geminiApiKey.trim()});
+    );
 
     final response = await _httpClient.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': settings.geminiApiKey.trim(),
+      },
       body: jsonEncode({
         'systemInstruction': {
           'parts': [
@@ -270,11 +275,14 @@ class A2uiAiService {
 
     final uri = Uri.parse(
       '$_baseUrl/models/${settings.selectedModel}:generateContent',
-    ).replace(queryParameters: {'key': settings.geminiApiKey.trim()});
+    );
 
     final response = await _httpClient.post(
       uri,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': settings.geminiApiKey.trim(),
+      },
       body: jsonEncode({
         'systemInstruction': {
           'parts': [

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../domain/models/ai_model_info.dart';
 import '../../domain/models/chat_session.dart';
@@ -55,7 +56,9 @@ class StorageService {
 
   Future<void> saveSettings(StudioSettings settings) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_settingsKey, jsonEncode(settings.toJson()));
+    // Never persist raw API keys to browser localStorage on Web (XSS risk).
+    final toStore = kIsWeb ? settings.copyWith(geminiApiKey: '') : settings;
+    await prefs.setString(_settingsKey, jsonEncode(toStore.toJson()));
   }
 
   Future<List<AiModelInfo>> loadCachedModels() async {

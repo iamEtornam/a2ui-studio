@@ -88,16 +88,6 @@ class StudioViewModel extends ChangeNotifier {
         return cli;
       }
     }
-    if (_settings.connectedCliPath.isNotEmpty) {
-      return InstalledCliTool(
-        id: _settings.connectedCliId,
-        name: _settings.connectedCliName,
-        binaryName: _settings.connectedCliId,
-        description: '',
-        isInstalled: true,
-        executablePath: _settings.connectedCliPath,
-      );
-    }
     return null;
   }
 

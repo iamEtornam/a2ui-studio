@@ -46,3 +46,10 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Secrets, local env files & generated media renders
+.env
+.env.*
+*.pem
+*.key
+brag-output/

@@ -5,6 +5,9 @@ import 'studio_catalog.dart';
 /// validation never fails on extra/hallucinated envelope fields (e.g. `darkTheme`)
 /// or missing `catalogId` on custom StudioCatalog components.
 class A2uiSanitizer {
+  static const int maxMessages = 20;
+  static const int maxComponentsPerSurface = 60;
+
   static const _allowedCreateSurfaceKeys = {
     'surfaceId',
     'catalogId',
@@ -40,7 +43,7 @@ class A2uiSanitizer {
     List<Map<String, Object?>> messages,
   ) {
     final cleaned = <Map<String, Object?>>[];
-    for (final raw in messages) {
+    for (final raw in messages.take(maxMessages)) {
       final msg = Map<String, Object?>.from(raw);
       msg['version'] = '1.0';
 
@@ -105,7 +108,7 @@ class A2uiSanitizer {
 
   static List<Map<String, Object?>> _sanitizeComponents(List<Object?> rawList) {
     final result = <Map<String, Object?>>[];
-    for (final item in rawList) {
+    for (final item in rawList.take(maxComponentsPerSurface)) {
       if (item is! Map) continue;
       final comp = Map<String, Object?>.from(item);
       final name = comp['component']?.toString() ?? '';

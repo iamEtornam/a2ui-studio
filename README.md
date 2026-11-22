@@ -126,6 +126,15 @@ flutter build macos
 
 ---
 
+## Security & Distribution Notes
+
+- **API Key Handling**: Gemini API requests send your key via the `x-goog-api-key` HTTP header (never in URL query parameters). On Web builds, API keys are kept in memory for the active session and are never written to `localStorage`.
+- **Installed CLI Allowlist**: On Desktop, `LocalCliService` only executes binaries from a fixed allowlist (`agy`, `claude`, `codex`, `gemini`, `ollama`) freshly resolved from system directories, validates model identifiers against a strict regex, and enforces execution timeouts.
+- **A2UI Sandbox**: Surfaces run strictly on A2UI protocol `v1.0` with `openUrl` disabled and component/envelope sanitization via `A2uiSanitizer`.
+- **macOS Distribution**: `macos/Runner/Release.entitlements` sets `com.apple.security.app-sandbox = false` so direct-distributed developer builds can invoke locally installed AI CLIs. Re-enable `com.apple.security.app-sandbox = true` if submitting to the Mac App Store (CLI execution will be disabled in sandboxed builds).
+
+---
+
 ## License
 
 Private repository — all rights reserved.
