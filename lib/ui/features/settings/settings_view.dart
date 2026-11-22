@@ -855,15 +855,16 @@ class _SectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = StudioColors.of(context);
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: c.panelBg,
+    return Material(
+      color: c.panelBg,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: c.borderSubtle),
+        side: BorderSide(color: c.borderSubtle),
       ),
-      child: Column(
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -910,6 +911,7 @@ class _SectionCard extends StatelessWidget {
           const SizedBox(height: 14),
           child,
         ],
+      ),
       ),
     );
   }

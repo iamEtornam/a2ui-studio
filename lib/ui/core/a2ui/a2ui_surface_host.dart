@@ -70,8 +70,12 @@ class _A2uiSurfaceHostState extends State<A2uiSurfaceHost> {
       ],
     );
 
+    var isSyncProcess = true;
     processor.model.onSurfaceCreated.subscribe((created) {
-      if (mounted) {
+      if (!mounted) return;
+      if (isSyncProcess) {
+        _surface = created;
+      } else {
         setState(() => _surface = created);
       }
     });
@@ -100,6 +104,8 @@ class _A2uiSurfaceHostState extends State<A2uiSurfaceHost> {
     } catch (e) {
       _errorText = e.toString();
       widget.onTelemetry?.call('[a2ui_flutter Parse Error] $e');
+    } finally {
+      isSyncProcess = false;
     }
 
     _processor = processor;
