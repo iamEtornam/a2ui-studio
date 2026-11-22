@@ -2,6 +2,18 @@
 
 A cross-platform **Flutter** studio (Mobile, Web, and Desktop) powered by **[`a2ui_flutter`](https://pub.dev/packages/a2ui_flutter)** (`v0.4.0`) and **[`a2ui_core`](https://pub.dev/packages/a2ui_core)** (`v0.8.0`) that lets you describe, iteratively refine, preview, save, and share interactive mini apps generated live by AI.
 
+![A2UI Studio — Studio Workspace](docs/screenshots/studio-workspace.png)
+
+## Screenshots
+
+| Chat Sessions (Multi-Chat + Live A2UI Surface) | Mini App Library (Private Vault & Public Community) |
+| :---: | :---: |
+| ![Chat Sessions](docs/screenshots/chat-sessions.png) | ![Mini App Library](docs/screenshots/mini-app-library.png) |
+
+| Studio Workspace (AI Refinement & A2UI Tree) | Settings & AI Connections (CLIs + Live Models) |
+| :---: | :---: |
+| ![Studio Workspace](docs/screenshots/studio-workspace.png) | ![Settings & AI Connections](docs/screenshots/settings.png) |
+
 ---
 
 ## Key Features
